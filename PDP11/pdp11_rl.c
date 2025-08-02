@@ -564,6 +564,10 @@ max 17ms for 1 track seek w/head switch
             if (tim == 0)
                 tim++;
             tim *= rl_swait;
+
+            void vid_beep_event (void);
+            vid_beep_event();
+
             sim_debug (RLDEB_RWR, &rl_dev, ">>RL SEEK: drv %d, dist %d, head sw %d, tim %d\n",
                     (int32) (uptr - rl_dev.units),
                     abs (newc - curr), (rlda & RLDA_SK_HD), tim);

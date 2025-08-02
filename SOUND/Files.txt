@@ -1,0 +1,185 @@
+Files to be modified and Files that serve as models
+===================================================
+
+vax410_sysdev.c
+---------------
+...
+else if (MATCH_CMD(gbuf, "VAXSTATIONGPX") == 0) {
+#if defined (USE_SIM_VIDEO) && defined (HAVE_LIBSDL)
+    sys_model = 1;
+    vc_dev.flags = vc_dev.flags | DEV_DIS;               /* disable MVO */
+    va_dev.flags = va_dev.flags & ~DEV_DIS;              /* enable GPX */
+...
+
+vax_vc.c
+---------
+...
+#include "sim_video.h"
+...
+
+sim_video.c
+-----------
+line 2701ff:
+#include <SDL_audio.h>
+#include <math.h>
+
+const int AMPLITUDE = 20000;
+const int SAMPLE_FREQUENCY = 11025;
+static int16 *vid_beep_data;
+static int vid_beep_offset;
+static int vid_beep_duration;
+static int vid_beep_samples;
+...
+
+"Beep" example (usage of SDL audio)
+===================================
+
+=>> "vid_beep_event ();" creates a beep using SDL2
+
+line 327: 
+---------
+#define EVENT_BEEP       10                              /* audio beep */
+
+lines 353-355:
+--------------
+void vid_beep_event (void);
+static void vid_beep_setup (int duration_ms, int tone_frequency);
+static void vid_beep_cleanup (void);
+
+line 542:
+---------
+vid_beep_setup (400, 660);
+
+lines 578-580:
+--------------
+SDL_WaitThread (vid_main_thread_handle, &status);
+vid_beep_cleanup ();
+SDL_Quit ();
+
+line 2068:
+----------
+vid_beep_setup (400, 660);
+
+lines 2127-2147
+---------------
+            case SDL_USEREVENT:
+                /* There are 11 user events generated */
+                /* EVENT_REDRAW      to update the display */
+                /* EVENT_DRAW        to update a region in the display texture */
+                /* EVENT_SHOW        to display the current SDL video capabilities */
+                /* EVENT_CURSOR      to change the current cursor */
+                /* EVENT_WARP        to warp the cursor position */
+                /* EVENT_OPEN        to open a new window */
+                /* EVENT_CLOSE       to wake up this thread and let */
+                /*                   it notice vid_active has changed */
+                /* EVENT_SCREENSHOT  to take a screenshot */
+                /* EVENT_BEEP        to emit a beep sound */
+                /* EVENT_FULLSCREEN  to change fullscreen */
+                /* EVENT_SIZE        to change screen size */
+                /* EVENT_LOGICAL     to change screen size */
+                while (vid_active && event.user.code) {
+                    /* Handle Beep first since it isn't a window oriented event */
+                    if (event.user.code == EVENT_BEEP) {
+                        vid_beep_event ();
+                        event.user.code = 0;    /* Mark as done */
+                        continue;
+
+lines 2212-2215:
+----------------
+                    if (event.user.code == EVENT_BEEP) {
+                        vid_beep_event ();
+                        event.user.code = 0;    /* Mark as done */
+                        }
+
+lines 2243-2247:
+----------------
+vid_controllers_cleanup ();
+vid_beep_cleanup ();
+sim_debug (SIM_VID_DBG_VIDEO|SIM_VID_DBG_KEY|SIM_VID_DBG_MOUSE|SIM_VID_DBG_CURSOR, vptr0->vid_dev, "vid_thread() - Exiting\n");
+return 0;
+}
+
+lines 2701-2782:
+----------------
+#include <SDL_audio.h>
+#include <math.h>
+
+const int AMPLITUDE = 20000;
+const int SAMPLE_FREQUENCY = 11025;
+static int16 *vid_beep_data;
+static int vid_beep_offset;
+static int vid_beep_duration;
+static int vid_beep_samples;
+
+static void vid_audio_callback(void *ctx, Uint8 *stream, int length)
+{
+int i, sum, remnant = ((vid_beep_samples - vid_beep_offset) * sizeof (*vid_beep_data));
+
+if (length > remnant) {
+    memset (stream + remnant, 0, length - remnant);
+    length = remnant;
+    if (remnant == 0) {
+        SDL_PauseAudio(1);
+        return;
+        }
+    }
+memcpy (stream, &vid_beep_data[vid_beep_offset], length);
+for (i=sum=0; i<length; i++)
+    sum += stream[i];
+vid_beep_offset += length / sizeof(*vid_beep_data);
+}
+
+static void vid_beep_setup (int duration_ms, int tone_frequency)
+{
+if (!vid_beep_data) {
+    int i;
+    SDL_AudioSpec desiredSpec;
+
+    SDL_InitSubSystem (SDL_INIT_AUDIO);
+    memset (&desiredSpec, 0, sizeof(desiredSpec));
+    desiredSpec.freq = SAMPLE_FREQUENCY;
+    desiredSpec.format = AUDIO_S16SYS;
+    desiredSpec.channels = 1;
+    desiredSpec.samples = 2048;
+    desiredSpec.callback = vid_audio_callback;
+
+    SDL_OpenAudio(&desiredSpec, NULL);
+
+    vid_beep_samples = (int)((SAMPLE_FREQUENCY * duration_ms) / 1000.0);
+    vid_beep_duration = duration_ms;
+    vid_beep_data = (int16 *)malloc (sizeof(*vid_beep_data) * vid_beep_samples);
+    for (i=0; i<vid_beep_samples; i++)
+        vid_beep_data[i] = (int16)(AMPLITUDE * sin(((double)(i * M_PI * tone_frequency)) / SAMPLE_FREQUENCY));
+    }
+}
+
+static void vid_beep_cleanup (void)
+{
+SDL_CloseAudio();
+free (vid_beep_data);
+vid_beep_data = NULL;
+SDL_QuitSubSystem (SDL_INIT_AUDIO);
+}
+
+void vid_beep_event (void)
+{
+vid_beep_offset = 0;                /* reset to beginning of sample set */
+SDL_PauseAudio (0);                 /* Play sound */
+}
+
+void vid_beep (void)
+{
+SDL_Event user_event;
+
+user_event.type = SDL_USEREVENT;
+user_event.user.code = EVENT_BEEP;
+user_event.user.data1 = NULL;
+user_event.user.data2 = NULL;
+#if defined (SDL_MAIN_AVAILABLE)
+while (SDL_PushEvent (&user_event) < 0)
+    sim_os_ms_sleep (10);
+#else
+vid_beep_event ();
+#endif
+SDL_Delay (vid_beep_duration + 100);/* Wait for sound to finish */
+}
