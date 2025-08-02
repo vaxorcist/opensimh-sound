@@ -1,0 +1,33 @@
+brainstorming.txt
+=================
+Collection of ideas and thoughts on the implementation of the SIMH sound project.
+
+ENABLE/DISABLE SOUND
+--------------------
+- Global sound setting at the computer level: SET SOUND ENABLED|DISABLED (Default: ?), overwrites all specific settings
+- Specific sound setting at the device type level, e.g. device RL: SET RL SOUND|NOSOUND (Default: ?) 
+  or at the device level, e.g. device RL0: SET RL0 SOUND|NOSOUND (Default: ?)
+
+Sound types and names
+---------------------
+a) Disk drives (d = disk, xxxx = drive type; e.g. rl02)
+d_xxxx_switchon
+d_xxxx_fan
+d_xxxx_spinup
+d_xxxx_spinidle
+d_xxxx_access_short
+d_xxxx_access_medium
+d_xxxx_access_long
+d_xxxx_spindown
+
+Several device types still need to be added
+
+Sound file type
+---------------
+Must be SDL2-supported; not decided upon yet
+Mono/Stereo? I think rather mono ...
+Sampling rate?
+
+SDL2 sdl_mixer
+--------------
+"chunk" versus "music" (see: https://wiki.libsdl.org/SDL2_mixer/Mix_LoadWAV)
