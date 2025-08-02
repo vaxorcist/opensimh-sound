@@ -1,16 +1,31 @@
-# Open SIMH machine simulator
+#  SIMH sound project
 
-This is the codebase of SIMH, a framework and collection of computer system simulators.
+This is a fork of the [SIMH computer simulator](https://github.com/open-simh/simh), trying to add real or realistic sounds from disk drives and other computer devices to the simulation using the SDL2 sdl_mixer extension.
 
-SIMH was created by Bob Supnik, originally at Digital Equipment Corporation, and extended by contributions of many other people.  It is now an open source project, licensed under an MIT open source license (see [LICENSE.txt](LICENSE.txt) for the specific wording).  The project gatekeepers are the members of the [SIMH Steering Group](SIMH-SG.md).  We welcome and encourage contributions from all.  Contributions will be covered by the project license.
+There are two reasons I want sound for SIMH (the sound of the running computer and its devices: fans, disks, floppys, tape drive, ... - as true as possible):
+- an objective reason:
+Imagine you're sitting in front of a computer with some software running which doesn't show any sign of progress.
+In real life you would at least hear the disk being accessed (if its not a modern SSD), if its a SIMH simulated computer you would hear NOTHING. I want audible feedback from the computer I'm working on (at least if its a classic one)!
+- a sentimental and/or nostalgic reason:
+I want to "feel" the computer with as many senses as possible in order to have the most realistic/authentic experience possible.
+Works starts with the DEC RL02 removable disk pack drive (because I've got two of them).
 
-The Open SIMH code base was taken from a code base maintained by Mark Pizzolato as of 12 May 2022.  From that point onward there is no connection between that source and the Open SIMH code base.  A detailed listing of features as of that point may be found in [SIMH-V4-status](SIMH-V4-status.md).
+I would very much appreciate if owners of other classic computer devices would contribute sound samples of their devices, preferably, but not exclusively DEC components.
 
-## PLEASE NOTE
+Following a most-wanted list:
+- RK07
+- any classic DEC 9-track tape drive
+- RM03
+- RP04
+- RP05
+- RM80
+- RP06
+- RM05
+- RP07
 
-**Do not** contribute material taken from `github.com/simh/simh` unless you are the author of the material in question.
+## The MSCP disk drive problem
+You may have noticed that there are no MSCP disk drives (RAxx, RDxx) on my wish list.
 
-<a href="https://scan.coverity.com/projects/open-simh-simh">
-  <img alt="Coverity Scan Build Status"
-       src="https://scan.coverity.com/projects/29458/badge.svg"/>
-</a>
+It's not that I don't like these drives, but the problem is that the MSCP disk simulation in SIMH is based on the MSCP protocol, not the drive itself. MSCP only deals with block transfers to and from disks and there is no information about what the disk needs to do to make these transfers possible, i.e. no information about seeking (moving the disk heads between tracks), which is what causes disk sounds during access.
+
+Therefore, there is currently no way to generate realistic disk access sounds for MSCP disks (and this will probably never change), only artificial sounds that mimic the real sounds when reading or writing.
