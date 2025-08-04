@@ -1429,9 +1429,7 @@ SIM = ${SIMHD}/scp.c ${SIMHD}/sim_console.c ${SIMHD}/sim_fio.c \
 	${SIMHD}/sim_timer.c ${SIMHD}/sim_sock.c ${SIMHD}/sim_tmxr.c \
 	${SIMHD}/sim_ether.c ${SIMHD}/sim_tape.c ${SIMHD}/sim_disk.c \
 	${SIMHD}/sim_serial.c ${SIMHD}/sim_video.c ${SIMHD}/sim_imd.c \
-	${SIMHD}/sim_card.c 
-
-# ${SIMHD}/sim_audio.c
+	${SIMHD}/sim_card.c ${SIMHD}/sim_audio.c
 
 DISPLAYD = ${SIMHD}/display
 
