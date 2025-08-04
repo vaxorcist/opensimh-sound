@@ -540,7 +540,7 @@ if (vid_main_thread_handle == NULL) {
     }
 
 /* duration (ms), tone (hz) was (400, 660) */
-vid_beep_setup (5, 6000);
+vid_beep_setup (10, 4000);
 
 memset (&event, 0, sizeof (event));
 
@@ -2060,7 +2060,7 @@ if (!vid_new_window (vptr0)) {
     }
 
 /* duration (ms), tone (hz) was (400, 660) */
-vid_beep_setup (5, 6000);
+vid_beep_setup (10, 4000);
 
 vid_controllers_setup (vptr0->vid_dev);
 
